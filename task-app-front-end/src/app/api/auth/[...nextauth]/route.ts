@@ -42,7 +42,7 @@ const handler = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      // Add the token to the JWT token
+
       if (user) {
         token.id = user.id;
         token.accessToken = user.token;
@@ -50,7 +50,6 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      // Add user ID and token to the session
       if (session.user) {
         session.user.id = token.id as string;
         session.accessToken = token.accessToken as string;
@@ -64,7 +63,7 @@ const handler = NextAuth({
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 30 * 24 * 60 * 60, 
   },
 });
 

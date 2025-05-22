@@ -45,7 +45,7 @@ export const registerUser = async (userData: RegisterData): Promise<void> => {
 };
 
 /**
- * Sign out user (client-side only)
+ * Sign out user
  * @param callbackUrl Optional URL to redirect to after sign out
  */
 export const signOutUser = async (callbackUrl: string = '/auth/login'): Promise<void> => {
