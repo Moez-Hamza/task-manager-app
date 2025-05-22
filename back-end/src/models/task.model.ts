@@ -1,20 +1,13 @@
 import prisma from '../config/db';
 import { Prisma } from '@prisma/client';
+import { Task, TaskCreateInput, TaskUpdateInput, TaskFilters } from '../types/task.types';
 
 
-type TaskUpdateInput = Prisma.TaskUpdateInput;
 
+type PrismaTaskUpdateInput = Prisma.TaskUpdateInput;
 
 export class TaskModel {
-
-  static async create(data: {
-    title: string;
-    description?: string;
-    status?: 'Todo' | 'InProgress' | 'Done';
-    dueDate: string | Date;
-    priority?: 'Low' | 'Medium' | 'High';
-    userId: string;
-  }) {
+  static async create(data: TaskCreateInput & { userId: string }): Promise<Task> {
     return prisma.task.create({
       data: {
         title: data.title,
@@ -32,21 +25,14 @@ export class TaskModel {
 
   static async findByUserId(
     userId: string,
-    filters?: {
-      status?: 'Todo' | 'InProgress' | 'Done';
-      priority?: 'Low' | 'Medium' | 'High';
-      sortBy?: string;
-      order?: 'asc' | 'desc';
-    }
-  ) {
+    filters?: TaskFilters
+  ): Promise<Task[]> {
     const { status, priority, sortBy = 'createdAt', order = 'desc' } = filters || {};
     
-
     const where: Prisma.TaskWhereInput = { userId };
     if (status) where.status = status;
     if (priority) where.priority = priority;
     
-
     const orderBy: Prisma.TaskOrderByWithRelationInput = {
       [sortBy]: order
     };
@@ -58,22 +44,15 @@ export class TaskModel {
   }
 
 
-  static async findById(taskId: string) {
+  static async findById(taskId: string): Promise<Task | null> {
     return prisma.task.findUnique({
       where: { id: taskId }
     });
   }
 
 
-  static async update(taskId: string, data: {
-    title?: string;
-    description?: string | null;
-    status?: 'Todo' | 'InProgress' | 'Done';
-    dueDate?: string | Date;
-    priority?: 'Low' | 'Medium' | 'High';
-  }) {
-    // Convert date string to Date object if provided
-    const updateData: TaskUpdateInput = { ...data };
+  static async update(taskId: string, data: TaskUpdateInput): Promise<Task> {
+    const updateData: PrismaTaskUpdateInput = { ...data };
     if (data.dueDate) {
       updateData.dueDate = new Date(data.dueDate);
     }
@@ -85,7 +64,7 @@ export class TaskModel {
   }
 
 
-  static async delete(taskId: string) {
+  static async delete(taskId: string): Promise<Task> {
     return prisma.task.delete({
       where: { id: taskId }
     });

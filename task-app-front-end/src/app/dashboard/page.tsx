@@ -8,7 +8,7 @@ import FilterBar from '../../components/FilterBar';
 import { getTasks, createTask, updateTask, deleteTask } from '../../services/taskService';
 import { ApiError } from '../../types/error';
 
-
+// to export in another file 
 export type Task = {
   id: string;
   title: string;
@@ -33,18 +33,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchTasks = async () => {
-      if (!session?.accessToken) return;
-
+     
       setLoading(true);
       try {
-        const taskData = await getTasks(session.accessToken, {
+        const taskData = await getTasks(session?.accessToken!, {
           status: statusFilter,
           priority: priorityFilter,
           sortBy: sortBy,
           order: sortOrder
         });
         setTasks(taskData);
-        setError('');
       } catch (err: ApiError | unknown) {
         console.error('Error fetching tasks:', err);
         setError('Failed to load tasks. Please try again.');

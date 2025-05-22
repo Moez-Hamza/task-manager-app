@@ -24,7 +24,7 @@ export default function TaskList({ tasks, onUpdateTask, onDeleteTask }: TaskList
   };
 
   // Get the CSS class for status badge
-  const getStatusClass = (status: string) => {
+  const getStatusClass = (status: Task['status']) => {
     switch (status) {
       case 'Todo':
         return 'bg-yellow-100 text-yellow-800';

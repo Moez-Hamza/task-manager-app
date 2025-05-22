@@ -2,20 +2,21 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '../middleware/error.middleware';
 import { TaskService } from '../services/task.service';
 import { z } from 'zod';
+import { TaskStatus, TaskPriority, TaskCreateInput, TaskUpdateInput, TaskFilters } from '../types/task.types';
 
 const taskSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().optional(),
-  status: z.enum(['Todo', 'InProgress', 'Done']).optional(),
+  status: z.nativeEnum(TaskStatus).optional(),
   dueDate: z.string().datetime({ offset: true }),
-  priority: z.enum(['Low', 'Medium', 'High']).optional(),
+  priority: z.nativeEnum(TaskPriority).optional(),
 });
 
 export const createTask = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const userId = req.user?.id;
 
@@ -25,12 +26,8 @@ export const createTask = async (
       throw error;
     }
 
-  
-    const validatedData = taskSchema.parse(req.body);
-    
+    const validatedData = taskSchema.parse(req.body) as TaskCreateInput;
     const task = await TaskService.createTask(userId, validatedData);
-
-   
     res.status(201).json(task);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -46,7 +43,7 @@ export const getTasks = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const userId = req.user?.id;
 
@@ -55,13 +52,12 @@ export const getTasks = async (
       error.statusCode = 401;
       throw error;
     }
-
+    
     const { status, priority, sortBy, order } = req.query;
 
-    // Create a filters object that matches TaskService.getTasks parameter structure
-    const filters = {
-      status: status as 'Todo' | 'InProgress' | 'Done' | undefined,
-      priority: priority as 'Low' | 'Medium' | 'High' | undefined,
+    const filters: TaskFilters = {
+      status: status as TaskStatus | undefined,
+      priority: priority as TaskPriority | undefined,
       sortBy: sortBy as string | undefined,
       order: order === 'desc' ? 'desc' : 'asc' as 'asc' | 'desc'
     };
@@ -78,11 +74,10 @@ export const getTaskById = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
-
     if (!userId) {
       const error = new Error('User not authenticated') as ApiError;
       error.statusCode = 401;
@@ -107,7 +102,7 @@ export const updateTask = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -121,12 +116,12 @@ export const updateTask = async (
     const updateTaskSchema = z.object({
       title: z.string().min(1).optional(),
       description: z.string().optional().nullable(),
-      status: z.enum(['Todo', 'InProgress', 'Done']).optional(),
+      status: z.nativeEnum(TaskStatus).optional(),
       dueDate: z.string().datetime({ offset: true }).optional(),
-      priority: z.enum(['Low', 'Medium', 'High']).optional(),
+      priority: z.nativeEnum(TaskPriority).optional(),
     });
 
-    const validatedData = updateTaskSchema.parse(req.body);
+    const validatedData = updateTaskSchema.parse(req.body) as TaskUpdateInput;
     
     try {
       const task = await TaskService.updateTask(id, userId, validatedData);
@@ -151,7 +146,7 @@ export const deleteTask = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
