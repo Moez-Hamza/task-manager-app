@@ -1,9 +1,8 @@
 const { PrismaClient } = require('@prisma/client');
 
-// Create a singleton Prisma instance
+
 const prisma = new PrismaClient();
 
-// Debug mode for development
 if (process.env.NODE_ENV === 'development') {
   prisma.$use(async (params: any, next: any) => {
     const before = Date.now();
@@ -20,7 +19,6 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-// Connect to the database with retry logic
 export const connectDB = async () => {
   let retries = 5;
   while (retries > 0) {
@@ -35,7 +33,6 @@ export const connectDB = async () => {
         console.error('All connection attempts failed, exiting.');
         process.exit(1);
       }
-      // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
