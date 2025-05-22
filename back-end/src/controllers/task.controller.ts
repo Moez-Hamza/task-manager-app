@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import prisma from '../config/db';
 import { ApiError } from '../middleware/error.middleware';
+import { TaskService } from '../services/task.service';
 import { z } from 'zod';
 
 const taskSchema = z.object({
@@ -25,20 +25,12 @@ export const createTask = async (
       throw error;
     }
 
+  
     const validatedData = taskSchema.parse(req.body);
-    const { title, description, status, dueDate, priority } = validatedData;
+    
+    const task = await TaskService.createTask(userId, validatedData);
 
-    const task = await prisma.task.create({
-      data: {
-        title,
-        description,
-        status: status || 'Todo',
-        dueDate: new Date(dueDate),
-        priority: priority || 'Medium',
-        userId,
-      },
-    });
-
+   
     res.status(201).json(task);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -66,27 +58,15 @@ export const getTasks = async (
 
     const { status, priority, sortBy, order } = req.query;
 
-    const whereCondition: any = { userId };
-    
-    if (status) {
-      whereCondition.status = status;
-    }
-    
-    if (priority) {
-      whereCondition.priority = priority;
-    }
+    // Create a filters object that matches TaskService.getTasks parameter structure
+    const filters = {
+      status: status as 'Todo' | 'InProgress' | 'Done' | undefined,
+      priority: priority as 'Low' | 'Medium' | 'High' | undefined,
+      sortBy: sortBy as string | undefined,
+      order: order === 'desc' ? 'desc' : 'asc' as 'asc' | 'desc'
+    };
 
-    let orderBy: any = {};
-    if (sortBy) {
-      orderBy[sortBy as string] = order === 'desc' ? 'desc' : 'asc';
-    } else {
-      orderBy = { createdAt: 'desc' };
-    }
-
-    const tasks = await prisma.task.findMany({
-      where: whereCondition,
-      orderBy,
-    });
+    const tasks = await TaskService.getTasks(userId, filters);
 
     res.json(tasks);
   } catch (error) {
@@ -109,17 +89,15 @@ export const getTaskById = async (
       throw error;
     }
 
-    const task = await prisma.task.findUnique({
-      where: { id },
-    });
-
-    if (!task || task.userId !== userId) {
-      const error = new Error('Task not found') as ApiError;
-      error.statusCode = 404;
+    try {
+      const task = await TaskService.getTaskById(id, userId);
+      res.json(task);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Task not found';
+      const error = new Error(errorMessage) as ApiError;
+      error.statusCode = errorMessage.includes('not found') ? 404 : 403;
       throw error;
     }
-
-    res.json(task);
   } catch (error) {
     next(error);
   }
@@ -139,17 +117,7 @@ export const updateTask = async (
       error.statusCode = 401;
       throw error;
     }
-
-    const existingTask = await prisma.task.findUnique({
-      where: { id },
-    });
-
-    if (!existingTask || existingTask.userId !== userId) {
-      const error = new Error('Task not found') as ApiError;
-      error.statusCode = 404;
-      throw error;
-    }
-
+    
     const updateTaskSchema = z.object({
       title: z.string().min(1).optional(),
       description: z.string().optional().nullable(),
@@ -160,19 +128,15 @@ export const updateTask = async (
 
     const validatedData = updateTaskSchema.parse(req.body);
     
-    const updateData: any = {};
-    if (validatedData.title) updateData.title = validatedData.title;
-    if (validatedData.description !== undefined) updateData.description = validatedData.description;
-    if (validatedData.status) updateData.status = validatedData.status;
-    if (validatedData.dueDate) updateData.dueDate = new Date(validatedData.dueDate);
-    if (validatedData.priority) updateData.priority = validatedData.priority;
-
-    const task = await prisma.task.update({
-      where: { id },
-      data: updateData,
-    });
-
-    res.json(task);
+    try {
+      const task = await TaskService.updateTask(id, userId, validatedData);
+      res.json(task);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Task not found';
+      const error = new Error(errorMessage) as ApiError;
+      error.statusCode = errorMessage.includes('not found') ? 404 : 403;
+      throw error;
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
       const apiError = new Error(error.errors[0].message) as ApiError;
@@ -198,21 +162,15 @@ export const deleteTask = async (
       throw error;
     }
 
-    const existingTask = await prisma.task.findUnique({
-      where: { id },
-    });
-
-    if (!existingTask || existingTask.userId !== userId) {
-      const error = new Error('Task not found') as ApiError;
-      error.statusCode = 404;
+    try {
+      await TaskService.deleteTask(id, userId);
+      res.json({ message: 'Task removed' });
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Task not found';
+      const error = new Error(errorMessage) as ApiError;
+      error.statusCode = errorMessage.includes('not found') ? 404 : 403;
       throw error;
     }
-
-    await prisma.task.delete({
-      where: { id },
-    });
-
-    res.json({ message: 'Task removed' });
   } catch (error) {
     next(error);
   }

@@ -81,4 +81,163 @@ I also had some issues with NextAuth since I hadn't worked with it before. I had
 
 Despite these challenges, everything went smoothly once the initial setup was complete, and I was able to build a functional and user-friendly task management application.
 
+## API Documentation
+
+The backend provides a RESTful API for managing users and tasks. Below is the detailed documentation for all available endpoints.
+
+### Authentication Endpoints
+
+#### Register User
+- **URL**: `/api/users/register`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "password123"
+  }
+  ```
+- **Success Response**: 
+  - **Code**: 201 Created
+  - **Content**: 
+    ```json
+    {
+      "user": {
+        "id": "uuid",
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "token": "jwt-token-string"
+    }
+    ```
+- **Error Responses**:
+  - **Code**: 400 Bad Request (validation errors)
+  - **Code**: 409 Conflict (email already in use)
+
+#### Login User
+- **URL**: `/api/users/login`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "email": "john@example.com",
+    "password": "password123"
+  }
+  ```
+- **Success Response**: 
+  - **Code**: 200 OK
+  - **Content**: 
+    ```json
+    {
+      "user": {
+        "id": "uuid",
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "token": "jwt-token-string"
+    }
+    ```
+- **Error Responses**:
+  - **Code**: 400 Bad Request (validation errors)
+  - **Code**: 401 Unauthorized (invalid credentials)
+
+### Task Endpoints
+
+> **Note**: All task endpoints require authentication. Include the JWT token in the Authorization header: `Authorization: Bearer {token}`
+
+#### Create Task
+- **URL**: `/api/tasks`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "title": "Complete project",
+    "description": "Finish the task manager app",
+    "status": "Todo",
+    "dueDate": "2025-06-01T00:00:00.000Z",
+    "priority": "High"
+  }
+  ```
+- **Success Response**: 
+  - **Code**: 201 Created
+  - **Content**: Task object
+- **Error Responses**:
+  - **Code**: 400 Bad Request (validation errors)
+  - **Code**: 401 Unauthorized
+
+#### Get All Tasks
+- **URL**: `/api/tasks`
+- **Method**: `GET`
+- **Query Parameters**:
+  - `status` (optional): Filter by status (`Todo`, `InProgress`, `Done`)
+  - `priority` (optional): Filter by priority (`Low`, `Medium`, `High`)
+  - `sortBy` (optional): Field to sort by (e.g., `dueDate`, `createdAt`, `priority`)
+  - `order` (optional): Sort order (`asc` or `desc`, default: `desc`)
+- **Success Response**: 
+  - **Code**: 200 OK
+  - **Content**: Array of task objects
+- **Error Response**:
+  - **Code**: 401 Unauthorized
+
+#### Get Task By ID
+- **URL**: `/api/tasks/:id`
+- **Method**: `GET`
+- **URL Parameters**: `id` - Task ID
+- **Success Response**: 
+  - **Code**: 200 OK
+  - **Content**: Task object
+- **Error Responses**:
+  - **Code**: 401 Unauthorized
+  - **Code**: 403 Forbidden (task belongs to another user)
+  - **Code**: 404 Not Found
+
+#### Update Task
+- **URL**: `/api/tasks/:id`
+- **Method**: `PUT`
+- **URL Parameters**: `id` - Task ID
+- **Request Body**:
+  ```json
+  {
+    "title": "Updated title",
+    "description": "Updated description",
+    "status": "InProgress",
+    "dueDate": "2025-06-15T00:00:00.000Z",
+    "priority": "Medium"
+  }
+  ```
+  > All fields are optional
+- **Success Response**: 
+  - **Code**: 200 OK
+  - **Content**: Updated task object
+- **Error Responses**:
+  - **Code**: 400 Bad Request (validation errors)
+  - **Code**: 401 Unauthorized
+  - **Code**: 403 Forbidden (task belongs to another user)
+  - **Code**: 404 Not Found
+
+#### Delete Task
+- **URL**: `/api/tasks/:id`
+- **Method**: `DELETE`
+- **URL Parameters**: `id` - Task ID
+- **Success Response**: 
+  - **Code**: 200 OK
+  - **Content**: `{ "message": "Task removed" }`
+- **Error Responses**:
+  - **Code**: 401 Unauthorized
+  - **Code**: 403 Forbidden (task belongs to another user)
+  - **Code**: 404 Not Found
+
+## Postman Collection
+
+A Postman collection is available to test the API endpoints. You can find it in the `docs/postman` directory of this repository.
+
+### How to Use the Postman Collection
+
+1. Import the `TaskManager.postman_collection.json` file into Postman
+2. Set up an environment variable named `baseUrl` with value `http://localhost:5000`
+3. Set up an environment variable named `token` which will be automatically populated after login/register
+4. Start with the authentication endpoints to get a valid token
+5. All other requests will automatically use the token for authentication
+
 Hope my work will satisfy you and that I will join the Bysur team soon!

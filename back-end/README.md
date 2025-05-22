@@ -1,15 +1,17 @@
 # Task Manager API
 
-Backend API for the Task Manager application built with Express, TypeScript, Prisma, and SQLite.
+Backend API for the Task Manager application built with Express, TypeScript, and Prisma ORM.
 
 ## Technologies Used
 
-- Node.js & Express
-- TypeScript
-- Prisma ORM
-- SQLite (local database)
-- JWT Authentication
-- Zod for validation
+- **Framework**: Node.js & Express
+- **Language**: TypeScript
+- **ORM**: Prisma
+- **Database**: PostgreSQL
+- **Authentication**: JWT (JSON Web Tokens)
+- **Validation**: Zod schema validation
+- **Error Handling**: Custom middleware
+- **Architecture**: MVC pattern with Service layer
 
 > **Note on Database Choice:** Although the original plan was to use PostgreSQL, due to time constraints and installation issues on the development machine, we opted for SQLite for this implementation. The application is designed to be database-agnostic through Prisma ORM, making it easy to switch to PostgreSQL in a production environment by simply changing the database provider in the Prisma schema.
 
@@ -52,21 +54,45 @@ npm run dev
 
 The server will start at http://localhost:5000
 
+## Architecture
+
+The application follows a layered architecture pattern:
+
+1. **Controllers Layer**: Handles HTTP requests/responses and input validation
+2. **Service Layer**: Contains business logic and orchestrates operations
+3. **Model Layer**: Handles data access through Prisma ORM
+4. **Middleware Layer**: Manages cross-cutting concerns like authentication and error handling
+
 ## Project Structure
 
 ```
 back-end/
-├── prisma/               # Prisma schema and migrations
-├── src/                  # Source code
-│   ├── controllers/      # Route controllers
-│   ├── middleware/       # Custom middleware
-│   ├── routes/           # API routes
-│   ├── utils/            # Utility functions
-│   └── index.ts          # Application entry point
-├── .env                  # Environment variables (create from .env.example)
-├── .env.example          # Example environment variables
-├── package.json          # Dependencies and scripts
-└── tsconfig.json         # TypeScript configuration
+├── prisma/                  # Prisma schema and migrations
+│   ├── schema.prisma        # Database schema definition
+│   └── migrations/          # Database migrations
+├── src/                     # Source code
+│   ├── controllers/         # Route controllers (HTTP layer)
+│   │   ├── task.controller.ts
+│   │   └── user.controller.ts
+│   ├── middleware/          # Custom middleware
+│   │   ├── auth.middleware.ts
+│   │   └── error.middleware.ts
+│   ├── models/              # Data access layer
+│   │   ├── task.model.ts
+│   │   └── user.model.ts
+│   ├── services/            # Business logic layer
+│   │   ├── task.service.ts
+│   │   └── user.service.ts
+│   ├── routes/              # API routes definitions
+│   │   ├── task.routes.ts
+│   │   └── user.routes.ts
+│   ├── utils/               # Utility functions
+│   │   └── jwt.utils.ts
+│   └── index.ts             # Application entry point
+├── .env                     # Environment variables
+├── .env.example             # Example environment variables
+├── package.json             # Dependencies and scripts
+└── tsconfig.json            # TypeScript configuration
 ```
 
 ## API Endpoints

@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt';
-import prisma from '../config/db';
-import { generateToken } from '../utils/jwt.utils';
 import { ApiError } from '../middleware/error.middleware';
+import { UserService } from '../services/user.service';
 import { z } from 'zod';
 
 const registerSchema = z.object({
@@ -22,37 +20,13 @@ export const registerUser = async (
   next: NextFunction
 ) => {
   try {
+  
     const { name, email, password } = registerSchema.parse(req.body);
     
-    const userExists = await prisma.user.findUnique({
-      where: { email },
-    });
 
-    if (userExists) {
-      const error = new Error('User already exists') as ApiError;
-      error.statusCode = 400;
-      throw error;
-    }
+    const result = await UserService.register({ name, email, password });
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
-    });
-
-    const token = generateToken(user.id, user.email);
-
-    res.status(201).json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      token,
-    });
+    res.status(201).json(result);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const apiError = new Error(error.errors[0].message) as ApiError;
@@ -69,34 +43,12 @@ export const loginUser = async (
   next: NextFunction
 ) => {
   try {
+
     const { email, password } = loginSchema.parse(req.body);
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user) {
-      const error = new Error('Invalid credentials') as ApiError;
-      error.statusCode = 401;
-      throw error;
-    }
-
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordMatch) {
-      const error = new Error('Invalid credentials') as ApiError;
-      error.statusCode = 401;
-      throw error;
-    }
-
-    const token = generateToken(user.id, user.email);
-
-    res.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      token,
-    });
+    const result = await UserService.login({ email, password });
+  
+    res.json(result);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const apiError = new Error(error.errors[0].message) as ApiError;

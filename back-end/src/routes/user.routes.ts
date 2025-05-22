@@ -6,7 +6,7 @@ import {
 
 const router = Router();
 
-// Authentication routes
+
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 
