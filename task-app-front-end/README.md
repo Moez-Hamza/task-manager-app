@@ -53,13 +53,48 @@ NEXTAUTH_URL=http://localhost:3000
 
 You can create a `.env.local` file in the project root to set these variables.
 
+## Architecture
+
+The application follows a clean architecture pattern with separation of concerns:
+
+### Service Layer
+The application implements a service layer pattern to separate API calls from UI components:
+
+- **Services**: Encapsulate all API interactions and data fetching logic
+  - `authService.ts`: Handles authentication (login, register) API calls
+  - `taskService.ts`: Manages task CRUD operations with the backend
+
+### Component Structure
+The UI is organized into reusable components following best practices:
+
+- **Layout Components**: Structure the application (Header, FilterBar)
+- **Feature Components**: Implement specific features (TaskForm, TaskList)
+- **Form Components**: Handle user input (LoginForm, RegisterForm)
+
 ## Project Structure
 
-- `src/app/` - Next.js app router
-- `src/app/api/auth/[...nextauth]/` - NextAuth setup
-- `src/app/auth/` - Authentication pages (login, register)
-- `src/app/dashboard/` - Dashboard and task management
-- `src/components/` - Reusable components
+```
+src/
+├── app/                        # Next.js app router
+│   ├── api/                    # API routes
+│   │   └── auth/               # NextAuth API routes
+│   ├── auth/                   # Auth pages
+│   │   ├── login/             # Login page
+│   │   └── register/          # Registration page
+│   ├── dashboard/             # Dashboard & task management
+│   └── page.tsx               # Home page with redirect
+├── components/                 # Reusable components
+│   ├── auth/                  # Auth-related components
+│   │   ├── LoginForm.tsx     # Login form component
+│   │   └── RegisterForm.tsx  # Registration form component
+│   ├── Header.tsx            # Navigation header
+│   ├── FilterBar.tsx         # Task filtering & sorting
+│   ├── TaskForm.tsx          # Task creation/editing form
+│   └── TaskList.tsx          # Task list display
+└── services/                   # API service layer
+    ├── authService.ts         # Authentication service
+    └── taskService.ts         # Task management service
+```
 
 ## Technologies Used
 

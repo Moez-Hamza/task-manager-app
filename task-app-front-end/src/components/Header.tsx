@@ -1,6 +1,7 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import { signOutUser } from '../services/authService';
 
 export default function Header() {
   const { data: session } = useSession();
@@ -22,13 +23,7 @@ export default function Header() {
             </div>
             <div className="ml-4">
               <button
-                onClick={() => {
-                  fetch('/api/auth/signout', {
-                    method: 'POST',
-                  }).then(() => {
-                    signOut({ callbackUrl: '/auth/login' });
-                  });
-                }}
+                onClick={() => signOutUser('/auth/login')}
                 className="px-3 py-1 text-sm text-gray-700 hover:text-gray-900 cursor-pointer"
               >
                 Logout

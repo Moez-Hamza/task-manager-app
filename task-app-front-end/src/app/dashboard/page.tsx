@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import axios from 'axios';
 import TaskForm from '../../components/TaskForm';
 import TaskList from '../../components/TaskList';
 import FilterBar from '../../components/FilterBar';
+import { getTasks, createTask, updateTask, deleteTask } from '../../services/taskService';
+import { ApiError } from '../../types/error';
 
-const API_URL = 'http://localhost:5000/api';
 
-// Task type definition
 export type Task = {
   id: string;
   title: string;
@@ -38,20 +37,15 @@ export default function DashboardPage() {
 
       setLoading(true);
       try {
-        let queryParams = new URLSearchParams();
-        if (statusFilter) queryParams.append('status', statusFilter);
-        if (priorityFilter) queryParams.append('priority', priorityFilter);
-        if (sortBy) queryParams.append('sortBy', sortBy);
-        if (sortOrder) queryParams.append('order', sortOrder);
-
-        const response = await axios.get(`${API_URL}/tasks?${queryParams.toString()}`, {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
+        const taskData = await getTasks(session.accessToken, {
+          status: statusFilter,
+          priority: priorityFilter,
+          sortBy: sortBy,
+          order: sortOrder
         });
-        setTasks(response.data);
+        setTasks(taskData);
         setError('');
-      } catch (err: any) {
+      } catch (err: ApiError | unknown) {
         console.error('Error fetching tasks:', err);
         setError('Failed to load tasks. Please try again.');
       } finally {
@@ -66,16 +60,11 @@ export default function DashboardPage() {
     if (!session?.accessToken) return;
 
     try {
-      const response = await axios.post(`${API_URL}/tasks`, taskData, {
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+      const newTask = await createTask(session.accessToken, taskData);
       
-
-      setTasks((prevTasks) => [response.data, ...prevTasks]);
+      setTasks((prevTasks) => [newTask, ...prevTasks]);
       setShowAddForm(false);
-    } catch (err: any) {
+    } catch (err: ApiError | unknown) {
       console.error('Error creating task:', err);
       setError('Failed to create task. Please try again.');
     }
@@ -85,16 +74,12 @@ export default function DashboardPage() {
     if (!session?.accessToken) return;
 
     try {
-      const response = await axios.put(`${API_URL}/tasks/${taskId}`, taskData, {
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+      const updatedTask = await updateTask(session.accessToken, taskId, taskData);
       
       setTasks((prevTasks) => 
-        prevTasks.map((task) => (task.id === taskId ? response.data : task))
+        prevTasks.map((task) => (task.id === taskId ? updatedTask : task))
       );
-    } catch (err: any) {
+    } catch (err: ApiError | unknown) {
       console.error('Error updating task:', err);
       setError('Failed to update task. Please try again.');
     }
@@ -104,14 +89,10 @@ export default function DashboardPage() {
     if (!session?.accessToken) return;
 
     try {
-      await axios.delete(`${API_URL}/tasks/${taskId}`, {
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+      await deleteTask(session.accessToken, taskId);
       
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-    } catch (err: any) {
+    } catch (err: ApiError | unknown) {
       console.error('Error deleting task:', err);
       setError('Failed to delete task. Please try again.');
     }
@@ -125,7 +106,7 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-bold text-gray-900">Your Tasks</h1>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
             >
               {showAddForm ? 'Cancel' : 'Add New Task'}
             </button>
