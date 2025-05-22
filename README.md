@@ -63,7 +63,7 @@ This project consists of two main parts:
 
 5. **Component Structure**: Developed reusable components for tasks to maintain clean, maintainable code.
 
-## Stretch Goals Achieved
+## Goals Achieved
 
 1. **Advanced Filtering and Sorting**: Implemented the ability to filter tasks by status and priority, as well as sort by various fields.
 
