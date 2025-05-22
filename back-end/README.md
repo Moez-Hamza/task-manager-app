@@ -12,6 +12,7 @@ Backend API for the Task Manager application built with Express, TypeScript, and
 - **Validation**: Zod schema validation
 - **Error Handling**: Custom middleware
 - **Architecture**: MVC pattern with Service layer
+- **Type Safety**: Comprehensive TypeScript type system with explicit return types
 
 > **Note on Database Choice:** Although the original plan was to use PostgreSQL, due to time constraints and installation issues on the development machine, we opted for SQLite for this implementation. The application is designed to be database-agnostic through Prisma ORM, making it easy to switch to PostgreSQL in a production environment by simply changing the database provider in the Prisma schema.
 
@@ -86,6 +87,9 @@ back-end/
 │   ├── routes/              # API routes definitions
 │   │   ├── task.routes.ts
 │   │   └── user.routes.ts
+│   ├── types/               # TypeScript type definitions
+│   │   ├── task.types.ts    # Task-related type definitions
+│   │   └── express.d.ts     # Express request extension
 │   ├── utils/               # Utility functions
 │   │   └── jwt.utils.ts
 │   └── index.ts             # Application entry point
@@ -147,3 +151,17 @@ To open a GUI for viewing and editing the database:
 ```bash
 npx prisma studio
 ```
+
+## TypeScript Type System
+
+The application follows TypeScript best practices for type safety:
+
+- **Explicit Return Types**: All functions have explicit return types, including Promise types for async functions
+- **Custom Type Definitions**: Located in the `/src/types` directory
+  - `Task` type for consistent task representation across the application
+  - `TaskStatus` and `TaskPriority` enums for type-safe status and priority values
+  - `TaskCreateInput` and `TaskUpdateInput` interfaces for type-safe API inputs
+- **Interface Extensions**: Express `Request` interface is extended in `express.d.ts` to support the `user` property
+- **Zod Validation**: Uses Zod's `nativeEnum` for type-safe validation of enums
+
+This approach ensures compile-time type checking, improves code maintainability, and reduces runtime errors.

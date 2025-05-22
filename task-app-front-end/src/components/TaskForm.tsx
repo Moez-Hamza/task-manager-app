@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Task } from '@/app/dashboard/page';
+import { Task, TaskCreateInput } from '@/types/task.types';
 
 type TaskFormProps = {
   task?: Task;
-  onSubmit: (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (taskData: TaskCreateInput) => void;
   onCancel?: () => void;
 };
 

@@ -1,57 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { Task } from '@/app/dashboard/page';
+import { Task, TaskUpdateInput } from '@/types/task.types';
 import TaskForm from './TaskForm';
+import { formatDate } from '@/utils/dateUtils';
+import { getStatusClass, getPriorityClass, STATUS_BUTTON_SELECTED_CLASSES, STATUS_BUTTON_HOVER_CLASSES } from '@/utils/styleUtils';
 
 type TaskListProps = {
   tasks: Task[];
-  onUpdateTask: (taskId: string, taskData: Partial<Task>) => void;
+  onUpdateTask: (taskId: string, taskData: TaskUpdateInput) => void;
   onDeleteTask: (taskId: string) => void;
 };
 
 export default function TaskList({ tasks, onUpdateTask, onDeleteTask }: TaskListProps) {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
-  // Helper to format date in a readable format
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
 
-  // Get the CSS class for status badge
-  const getStatusClass = (status: Task['status']) => {
-    switch (status) {
-      case 'Todo':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'InProgress':
-        return 'bg-blue-100 text-blue-800';
-      case 'Done':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Get the CSS class for priority badge
-  const getPriorityClass = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return 'bg-red-100 text-red-800';
-      case 'Medium':
-        return 'bg-orange-100 text-orange-800';
-      case 'Low':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  // Handle quick status update
   const handleStatusChange = (taskId: string, newStatus: 'Todo' | 'InProgress' | 'Done') => {
     onUpdateTask(taskId, { status: newStatus });
   };
@@ -116,8 +80,8 @@ export default function TaskList({ tasks, onUpdateTask, onDeleteTask }: TaskList
                       onClick={() => handleStatusChange(task.id, 'Todo')}
                       className={`px-2 py-1 text-xs rounded-md cursor-pointer ${
                         task.status === 'Todo'
-                          ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
-                          : 'bg-gray-100 text-gray-600 hover:bg-yellow-50'
+                          ? STATUS_BUTTON_SELECTED_CLASSES['Todo']
+                          : STATUS_BUTTON_HOVER_CLASSES['Todo']
                       }`}
                     >
                       Todo
@@ -126,8 +90,8 @@ export default function TaskList({ tasks, onUpdateTask, onDeleteTask }: TaskList
                       onClick={() => handleStatusChange(task.id, 'InProgress')}
                       className={`px-2 py-1 text-xs rounded-md cursor-pointer ${
                         task.status === 'InProgress'
-                          ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                          : 'bg-gray-100 text-gray-600 hover:bg-blue-50'
+                          ? STATUS_BUTTON_SELECTED_CLASSES['InProgress']
+                          : STATUS_BUTTON_HOVER_CLASSES['InProgress']
                       }`}
                     >
                       In Progress
@@ -136,8 +100,8 @@ export default function TaskList({ tasks, onUpdateTask, onDeleteTask }: TaskList
                       onClick={() => handleStatusChange(task.id, 'Done')}
                       className={`px-2 py-1 text-xs rounded-md cursor-pointer ${
                         task.status === 'Done'
-                          ? 'bg-green-100 text-green-800 border border-green-300'
-                          : 'bg-gray-100 text-gray-600 hover:bg-green-50'
+                          ? STATUS_BUTTON_SELECTED_CLASSES['Done']
+                          : STATUS_BUTTON_HOVER_CLASSES['Done']
                       }`}
                     >
                       Done

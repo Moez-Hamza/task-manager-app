@@ -57,6 +57,21 @@ You can create a `.env.local` file in the project root to set these variables.
 
 The application follows a clean architecture pattern with separation of concerns:
 
+### Type System
+The application uses TypeScript with dedicated type definitions:
+
+- **Types**: Centralized type definitions for consistent typing across the application
+  - `task.types.ts`: Task-related types (Task, TaskCreateInput, TaskUpdateInput)
+  - `auth.types.ts`: Authentication-related types (LoginCredentials, RegisterData)
+  - `error.ts`: Error handling types
+
+### Utility Layer
+Common functionality is extracted to reusable utility functions:
+
+- **Utils**: Shared functions for formatting, styling, and other helpers
+  - `dateUtils.ts`: Date formatting and manipulation utilities
+  - `styleUtils.ts`: UI styling helpers with object-based class lookups
+
 ### Service Layer
 The application implements a service layer pattern to separate API calls from UI components:
 
@@ -91,9 +106,17 @@ src/
 │   ├── FilterBar.tsx         # Task filtering & sorting
 │   ├── TaskForm.tsx          # Task creation/editing form
 │   └── TaskList.tsx          # Task list display
-└── services/                   # API service layer
-    ├── authService.ts         # Authentication service
-    └── taskService.ts         # Task management service
+├── services/                   # API service layer
+│   ├── authService.ts         # Authentication service
+│   └── taskService.ts         # Task management service
+├── types/                      # TypeScript type definitions
+│   ├── auth.types.ts          # Authentication-related types
+│   ├── error.ts               # Error handling types
+│   ├── next-auth.d.ts         # NextAuth type extensions
+│   └── task.types.ts          # Task-related types
+└── utils/                      # Utility functions
+    ├── dateUtils.ts           # Date formatting utilities
+    └── styleUtils.ts          # UI styling helpers
 ```
 
 ## Technologies Used

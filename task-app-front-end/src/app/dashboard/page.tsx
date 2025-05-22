@@ -6,19 +6,8 @@ import TaskForm from '../../components/TaskForm';
 import TaskList from '../../components/TaskList';
 import FilterBar from '../../components/FilterBar';
 import { getTasks, createTask, updateTask, deleteTask } from '../../services/taskService';
-import { ApiError } from '../../types/error';
-
-// to export in another file 
-export type Task = {
-  id: string;
-  title: string;
-  description?: string;
-  status: 'Todo' | 'InProgress' | 'Done';
-  dueDate: string;
-  priority: 'Low' | 'Medium' | 'High';
-  createdAt: string;
-  updatedAt: string;
-};
+import { ApiError } from '@/types/error';
+import { Task, TaskCreateInput, TaskUpdateInput } from '@/types/task.types';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -33,13 +22,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchTasks = async () => {
-     
       setLoading(true);
       try {
         const taskData = await getTasks(session?.accessToken!, {
           status: statusFilter,
           priority: priorityFilter,
-          sortBy: sortBy,
+          sortBy,
           order: sortOrder
         });
         setTasks(taskData);
@@ -54,7 +42,7 @@ export default function DashboardPage() {
     fetchTasks();
   }, [session, statusFilter, priorityFilter, sortBy, sortOrder]);
 
-  const handleCreateTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const handleCreateTask = async (taskData: TaskCreateInput) => {
     if (!session?.accessToken) return;
 
     try {
@@ -68,7 +56,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUpdateTask = async (taskId: string, taskData: Partial<Task>) => {
+  const handleUpdateTask = async (taskId: string, taskData: TaskUpdateInput) => {
     if (!session?.accessToken) return;
 
     try {
